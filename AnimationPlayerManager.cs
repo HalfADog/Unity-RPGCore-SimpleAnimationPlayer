@@ -61,7 +61,7 @@ namespace RPGCore.Animation
 			{
 				if (hasTransition)
 				{
-					return currentTransitionToAnimation.CheckFinished(Time.time);
+					return currentTransitionToAnimation.CheckFinished();
 				}
 				return currentPlayingAnimation.finishPlaying;
 			}
@@ -78,7 +78,7 @@ namespace RPGCore.Animation
 				{
 					if (hasLayerTransition)
 					{
-						return currentLayerTransitionToAnimation.CheckFinished(Time.time) ? 1 : 0;
+						return currentLayerTransitionToAnimation.CheckFinished() ? 1 : 0;
 					}
 					return currentLayerPlayingAnimation.finishPlaying ? 1 : 0;
 				}
@@ -114,11 +114,11 @@ namespace RPGCore.Animation
 			//更新随机检查器 用以判断同一时刻的转换请求
 			randomChecker = Random.Range(1, 100000);
 			//更新当前播放动画的信息
-			currentPlayingAnimation.CheckFinished(Time.time);
+			currentPlayingAnimation.CheckFinished();
 			//更新当前播放的层级动画的信息
 			if (hasLayerAnimation && currentLayerPlayingAnimation != null)
 			{
-				currentLayerPlayingAnimation.CheckFinished(Time.time);
+				currentLayerPlayingAnimation.CheckFinished();
 			}
 			//处理转换
 			ProcessTransitionRequest();
@@ -127,6 +127,7 @@ namespace RPGCore.Animation
 			{
 				ProcessLayerTransitionRequest();
 			}
+			//Debug.Log(CurrentFinishPlaying);
 		}
 
 		/// <summary>
@@ -231,7 +232,7 @@ namespace RPGCore.Animation
 					//如果两个请求不相等且当前请求的优先级大于队尾请求的优先级
 					//把队尾优先级小于或等于当前请求的项移除
 					//直到队尾项的优先级大于当前请求或队列为空
-					while (requestItem.animPriority >= qtail.animPriority)
+					while (requestItem.animPriority > qtail.animPriority)
 					{
 						animationTransitionQueue.PopTail();
 						if (animationTransitionQueue.isEmpty()) break;
@@ -585,6 +586,11 @@ namespace RPGCore.Animation
 			return currentLayerPlayingAnimation?.data.animName;
 		}
 
+		public float GetCurrentPlayingAnimationPercentage()
+		{
+			return currentPlayingAnimation.PlayPercentage();
+		}
+
 		/// <summary>
 		/// 设置层动画的权重
 		/// </summary>
@@ -646,13 +652,18 @@ namespace RPGCore.Animation
 				this.beginTime = beginTime;
 			}
 
-			public bool CheckFinished(double cTime)
+			public bool CheckFinished()
 			{
-				if ((float)(cTime - beginTime) * data.multiplier >= data.animClip.length + data.offset)
+				if ((float)(Time.time - beginTime) * data.multiplier >= data.animClip.length + data.offset)
 				{
 					finishPlaying = true;
 				}
 				return finishPlaying;
+			}
+
+			public float PlayPercentage()
+			{
+				return Mathf.Clamp01(((float)(Time.time - beginTime) * data.multiplier) / (data.animClip.length + data.offset));
 			}
 		}
 	}
