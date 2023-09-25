@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public static class AnimationPlayerUtility
-{
-}
-
 /// <summary>
 /// 环形数组栈
 /// </summary>

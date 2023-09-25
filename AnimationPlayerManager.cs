@@ -232,8 +232,17 @@ namespace RPGCore.Animation
 					//如果两个请求不相等且当前请求的优先级大于队尾请求的优先级
 					//把队尾优先级小于或等于当前请求的项移除
 					//直到队尾项的优先级大于当前请求或队列为空
-					while (requestItem.animPriority > qtail.animPriority)
+					while (requestItem.animPriority >= qtail.animPriority)
 					{
+						//如果两个优先级相等
+						if (requestItem.animPriority == qtail.animPriority && qtail.canAbort)
+						{
+							//且队尾项只能被更高优先级的请求打断则跳过
+							if (qtail.abortType == AnimationAbortType.OnlyHigherPriority)
+							{
+								break;
+							}
+						}
 						animationTransitionQueue.PopTail();
 						if (animationTransitionQueue.isEmpty()) break;
 						qtail = animationTransitionQueue.PeekTail();
